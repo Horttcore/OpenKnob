@@ -37,7 +37,7 @@ final class AppModel: ObservableObject {
 
     private let midi = MidiService()
     private let store: ConfigStore
-    private var gate = GestureGate()
+    private var session: BuzzerSession
     private var started = false
     private var pollTask: Task<Void, Never>?
     private var colorTask: Task<Void, Never>?
@@ -50,7 +50,8 @@ final class AppModel: ObservableObject {
         self.store = store
         var loaded = store.load()
         loaded.normalize()
-        config = loaded
+        session = BuzzerSession(config: loaded)
+        config = session.config
         colorHex = loaded.connectColorHex
         portSelection = loaded.portName ?? ""
     }
@@ -279,36 +280,25 @@ final class AppModel: ObservableObject {
 
     private func ingest(_ bytes: [UInt8]) {
         append(LogLine(text: "← \(HexCodec.string(from: bytes))", direction: .incoming))
-        let messages = MidiMessage.parseChannelMessages(from: bytes)
-        if let learning {
-            if let message = messages.first(where: { !LedProtocol.isLedTraffic($0) }) {
-                commitLearn(learning, message: message)
+        session.config = config
+        session.learning = learning
+        session.matchAnyValue = matchAnyValue
+        let notices = session.receive(bytes)
+        config = session.config
+        learning = session.learning
+        for notice in notices {
+            switch notice {
+            case let .learned(rule):
+                learnTask?.cancel()
+                save()
+                note("\(rule.gesture.title) learned as \(rule.summary).")
+            case let .performed(gesture, actions):
+                statusMessage = gesture.title
+                for action in actions {
+                    ActionRunner.perform(action, model: self)
+                }
             }
-            return
         }
-        var router = GestureRouter(
-            rules: config.rules,
-            gate: gate,
-            pressCooldown: TimeInterval(config.pressCooldownMs) / 1000,
-            turnCooldown: TimeInterval(config.turnCooldownMs) / 1000
-        )
-        for message in messages {
-            guard let gesture = router.handle(message) else { continue }
-            statusMessage = gesture.title
-            for action in config.actions(for: gesture) {
-                ActionRunner.perform(action, model: self)
-            }
-        }
-        gate = router.gate
-    }
-
-    private func commitLearn(_ gesture: KnobGesture, message: MidiMessage) {
-        let rule = GestureLearner.rule(for: gesture, message: message, matchAnyValue: matchAnyValue)
-        config.rules = GestureLearner.apply(rule, to: config.rules)
-        learning = nil
-        learnTask?.cancel()
-        save()
-        note("\(gesture.title) learned as \(rule.summary).")
     }
 
     private func save() {

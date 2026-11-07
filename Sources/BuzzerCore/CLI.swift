@@ -12,6 +12,9 @@ public enum BuzzerCLI {
             return led(Array(args.dropFirst()))
         case "parse":
             return parse(Array(args.dropFirst()))
+        case "simulate":
+            print(KnobSimulation.transcript())
+            return 0
         case "help", "-h", "--help":
             print(help)
             return 0
@@ -62,6 +65,7 @@ public enum BuzzerCLI {
     private static let help = """
     BuzzerMac --cli led <hex> [all|0|1|2]
     BuzzerMac --cli parse <hex bytes>
+    BuzzerMac --cli simulate
     """
 
     private static func fail(_ message: String) -> Int32 {

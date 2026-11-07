@@ -179,6 +179,31 @@ final class BuzzerCoreTests: XCTestCase {
         XCTAssertEqual(BuzzerAction.setLED(hex: "#00ff00").summary, "LED #00FF00")
     }
 
+    func testScriptedKnobSession() {
+        let steps = KnobSimulation.run()
+        XCTAssertEqual(steps.map(\.title).count, 9)
+
+        XCTAssertEqual(steps[0].notices, [
+            .learned(GestureRule(gesture: .press, status: 0x90, data1: 0x30, data2: 0x7F))
+        ])
+        XCTAssertEqual(steps[1].notices, [
+            .learned(GestureRule(gesture: .turnRight, status: 0xBB, data1: 0x10, data2: 0x01))
+        ])
+        XCTAssertEqual(steps[2].notices, [
+            .learned(GestureRule(gesture: .turnLeft, status: 0xBB, data1: 0x10, data2: 0x7F))
+        ])
+        XCTAssertTrue(steps[3].notices.isEmpty, "LED echo must not count as a gesture")
+        XCTAssertEqual(steps[4].notices, [.performed(.press, [.media(.playPause)])])
+        XCTAssertTrue(steps[5].notices.isEmpty, "Second press inside 180ms is ignored")
+        XCTAssertEqual(steps[6].notices, [.performed(.press, [.media(.playPause)])])
+        XCTAssertEqual(steps[7].notices, [
+            .performed(.turnRight, [.media(.volumeUp)]),
+            .performed(.turnRight, [.media(.volumeUp)]),
+        ])
+        XCTAssertEqual(steps[8].notices, [.performed(.turnLeft, [.media(.volumeDown)])])
+        XCTAssertFalse(KnobSimulation.transcript().isEmpty)
+    }
+
     func testCLILedAndParse() {
         XCTAssertEqual(BuzzerCLI.run(arguments: ["led", "FF0000", "0"]), 0)
         XCTAssertEqual(BuzzerCLI.run(arguments: ["led", "nope"]), 1)

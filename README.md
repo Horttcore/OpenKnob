@@ -71,7 +71,20 @@ swift run BuzzerMac --cli led 00FF00 1
 swift run BuzzerMac --cli parse "F8 90 3C 7F"
 ```
 
-`swift test` checks the LED bytes, the learn/decode rules, and config saving. Those tests do not need the knob.
+`swift test` checks the LED bytes, the learn/decode rules, config saving, and a scripted knob: learn press and both turns, ignore LED echoes, debounce a double press, and fire the default actions. No device required.
+
+```bash
+swift test
+swift run BuzzerMac --cli simulate
+```
+
+On your Mac, with the buzzer plugged in and the official app quit:
+
+1. `./scripts/package-app.sh && open Buzzer.app`
+2. Confirm the MIDI log prints a line when you press and when you turn each way.
+3. Learn all three gestures. Press should show one learned line, not an LED packet (`BB 46`–`BB 4E`).
+4. Press and turn again and confirm the default actions: play/pause, volume up, volume down. Allow Accessibility if those keys do nothing.
+5. Pick a color and press **Send**. The rings should change. The log should show outgoing `BB 46`…`BB 4E` packets.
 
 ## Inject
 
