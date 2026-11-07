@@ -6,14 +6,18 @@ struct MenuLabel: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        Image(systemName: model.isConnected ? "dial.medium.fill" : "dial.medium")
-            .onAppear { model.start() }
+        HStack(spacing: 4) {
+            Image(systemName: model.isConnected ? "dial.medium.fill" : "dial.medium")
+            Text("Buzzer")
+        }
+        .onAppear { model.start() }
     }
 }
 
 struct MenuContent: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.openWindow) private var openWindow
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
@@ -39,12 +43,7 @@ struct MenuContent: View {
         }
         .padding(14)
         .frame(width: 280, alignment: .leading)
-        .onAppear {
-            model.start()
-            guard !model.didRevealWindow else { return }
-            model.didRevealWindow = true
-            reveal()
-        }
+        .onAppear { model.start() }
     }
 
     private func reveal() {

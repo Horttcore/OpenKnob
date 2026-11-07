@@ -33,7 +33,6 @@ final class AppModel: ObservableObject {
     @Published var ringIndex = 0
     @Published var colorHex: String
     @Published var injectHex = ""
-    var didRevealWindow = false
 
     private let midi = MidiService()
     private let store: ConfigStore

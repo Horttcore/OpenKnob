@@ -20,14 +20,29 @@ enum Entry {
     }
 }
 
-struct BuzzerMacApp: App {
-    @StateObject private var model = AppModel()
-
-    init() {
-        NSApplication.shared.setActivationPolicy(.accessory)
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+}
+
+struct BuzzerMacApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var model = AppModel()
+
     var body: some Scene {
+        WindowGroup("Buzzer", id: "main") {
+            RootView()
+                .environmentObject(model)
+                .frame(minWidth: 860, minHeight: 560)
+        }
+        .defaultSize(width: 920, height: 640)
+
         MenuBarExtra {
             MenuContent()
                 .environmentObject(model)
@@ -36,20 +51,6 @@ struct BuzzerMacApp: App {
                 .environmentObject(model)
         }
         .menuBarExtraStyle(.window)
-
-        Window("Buzzer", id: "main") {
-            RootView()
-                .environmentObject(model)
-        }
-        .defaultSize(width: 920, height: 640)
-        .commands {
-            CommandGroup(replacing: .appTermination) {
-                Button("Quit Buzzer") {
-                    NSApp.terminate(nil)
-                }
-                .keyboardShortcut("q")
-            }
-        }
     }
 }
 #else

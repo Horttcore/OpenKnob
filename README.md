@@ -1,6 +1,6 @@
 # Buzzer
 
-A small macOS menu-bar app for a timeBuzzer knob (`USB 0x04d8` / `0xf300`, Ideas In Logic). It listens for **press**, **turn right**, and **turn left**, runs the actions you assign, and paints the three RGB rings.
+A small macOS app for a timeBuzzer knob (`USB 0x04d8` / `0xf300`, Ideas In Logic). It listens for **press**, **turn right**, and **turn left**, runs the actions you assign, and paints the three RGB rings.
 
 The official timeBuzzer app owns those gestures while it is running. Quit it before using Buzzer.
 
@@ -26,14 +26,16 @@ Nothing is sent for a gesture until you press **Learn** and perform it. The lear
 
 ## Run it on your Mac
 
-You need macOS 13 or later and Xcode (the app is SwiftUI).
+The window only exists on macOS. `open Buzzer.app` in this cloud shell does nothing: `open` there is a Linux file launcher, and a bundle built here is a Linux binary.
+
+On your Mac, install Xcode (or the Command Line Tools), then in this project:
 
 ```bash
 ./scripts/package-app.sh
 open Buzzer.app
 ```
 
-The menu-bar dial opens the controls again after you close the window. Quit from that menu.
+A Buzzer window opens, and the app stays in the Dock. The menu bar shows **Buzzer** if you close the window. Quit from the Dock or the menu.
 
 Grant **Accessibility** when you want keystrokes or media keys. System Settings → Privacy & Security → Accessibility → Buzzer. Each rebuild is ad-hoc signed, so macOS may ask again after `package-app.sh`.
 

@@ -2,6 +2,18 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  echo "This shell is $(uname -s), not a Mac."
+  echo "Buzzer.app cannot open here. A bundle built on Linux is a Linux program and will not launch on your Mac either."
+  echo
+  echo "On your Mac, from this project:"
+  echo "  ./scripts/package-app.sh && open Buzzer.app"
+  echo
+  echo "Scripted knob from this shell:"
+  swift run -c release BuzzerMac --cli simulate
+  exit 1
+fi
+
 swift build -c release --product BuzzerMac
 
 APP="Buzzer.app"
