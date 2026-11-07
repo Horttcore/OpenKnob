@@ -1,0 +1,5 @@
+.build/
+.swiftpm/
+BuzzerMac.app
+.DS_Store
+*.xcuserstate
